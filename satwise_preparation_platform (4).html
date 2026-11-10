@@ -1,0 +1,2302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SATWISE - Digital SAT Preparation Platform</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Phosphor Icons CDN -->
+  <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+  
+  <!-- Chart.js for responsive analytics charts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#eef6ff',
+              100: '#d9ebff',
+              200: '#bcdbff',
+              300: '#8ec3ff',
+              400: '#58a0ff',
+              500: '#2f7bff',
+              600: '#1a5ceb',
+              700: '#1446c7',
+              800: '#15399f',
+              900: '#16337d',
+            },
+            sidebar: '#0c1322',
+            surface: '#f8fafc',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+      overflow-x: hidden;
+    }
+    
+    /* Smooth custom scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    .custom-shadow {
+      box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.05), 0 1px 2px -1px rgb(0 0 0 / 0.05);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex antialiased selection:bg-brand-500 selection:text-white">
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed top-5 right-5 z-[100] flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Mobile Backdrop -->
+  <div id="mobile-backdrop" onclick="toggleMobileSidebar()" class="fixed inset-0 bg-slate-900/60 z-40 hidden md:hidden backdrop-blur-xs transition-opacity"></div>
+
+  <!-- Left Sidebar Navigation -->
+  <aside id="sidebar" class="fixed md:sticky top-0 left-0 h-screen w-64 bg-sidebar text-slate-300 flex flex-col justify-between shrink-0 z-50 transition-transform duration-300 -translate-x-full md:translate-x-0 border-r border-slate-800">
+    <div>
+      <!-- Brand Logo / Header -->
+      <div class="h-16 flex items-center justify-between px-6 border-b border-slate-800/80">
+        <a href="javascript:void(0)" onclick="navigateTo('overview')" class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-brand-600 flex items-center justify-center text-white shadow-md shadow-brand-500/30">
+            <i class="ph-bold ph-graduation-cap text-lg"></i>
+          </div>
+          <span class="text-lg font-bold tracking-tight text-white flex items-center gap-1">
+            SAT<span class="text-brand-400">WISE</span>
+          </span>
+        </a>
+        <button onclick="toggleMobileSidebar()" class="md:hidden text-slate-400 hover:text-white p-1 rounded-lg">
+          <i class="ph-bold ph-x text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Navigation Menu -->
+      <div class="px-4 py-4 overflow-y-auto max-h-[calc(100vh-210px)]">
+        <p id="txt-nav-main-title" class="px-3 text-[11px] font-semibold tracking-wider text-slate-400 uppercase mb-2">Main Menu</p>
+        <nav class="space-y-1 text-sm font-medium" id="nav-links">
+          <button onclick="navigateTo('overview')" data-nav="overview" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all text-white bg-brand-600 shadow-sm shadow-brand-600/30">
+            <i class="ph ph-squares-four text-lg"></i>
+            <span data-i18n="nav_overview">Overview</span>
+          </button>
+
+          <button onclick="navigateTo('practice')" data-nav="practice" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all text-slate-400 hover:text-white hover:bg-slate-800/80">
+            <i class="ph ph-pencil-line text-lg"></i>
+            <span data-i18n="nav_practice">SAT Practice</span>
+          </button>
+
+          <button onclick="navigateTo('progress')" data-nav="progress" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all text-slate-400 hover:text-white hover:bg-slate-800/80">
+            <i class="ph ph-chart-line-up text-lg"></i>
+            <span data-i18n="nav_progress">My Progress</span>
+          </button>
+
+          <button onclick="navigateTo('book-course')" data-nav="book-course" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all text-slate-400 hover:text-white hover:bg-slate-800/80">
+            <i class="ph ph-chalkboard-teacher text-lg"></i>
+            <span data-i18n="nav_book_course">Book a Course</span>
+          </button>
+
+          <button onclick="navigateTo('countdown')" data-nav="countdown" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all text-slate-400 hover:text-white hover:bg-slate-800/80">
+            <i class="ph ph-calendar-check text-lg"></i>
+            <span data-i18n="nav_countdown">Exam Countdown</span>
+          </button>
+
+          <button onclick="navigateTo('planner')" data-nav="planner" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all text-slate-400 hover:text-white hover:bg-slate-800/80">
+            <i class="ph ph-clock-countdown text-lg"></i>
+            <span data-i18n="nav_planner">Study Planner</span>
+          </button>
+
+          <button onclick="navigateTo('bookmarks')" data-nav="bookmarks" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all text-slate-400 hover:text-white hover:bg-slate-800/80">
+            <i class="ph ph-bookmark-simple text-lg"></i>
+            <span data-i18n="nav_bookmarks">Bookmarks</span>
+          </button>
+
+          <div class="pt-4 pb-1">
+            <p id="txt-nav-account-title" class="px-3 text-[11px] font-semibold tracking-wider text-slate-400 uppercase mb-2">Account</p>
+          </div>
+
+          <button onclick="navigateTo('profile')" data-nav="profile" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all text-slate-400 hover:text-white hover:bg-slate-800/80">
+            <i class="ph ph-user text-lg"></i>
+            <span data-i18n="nav_profile">Profile</span>
+          </button>
+
+          <button onclick="navigateTo('settings')" data-nav="settings" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all text-slate-400 hover:text-white hover:bg-slate-800/80">
+            <i class="ph ph-gear text-lg"></i>
+            <span data-i18n="nav_settings">Settings</span>
+          </button>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Upgrade to Premium Promo Card at Bottom of Sidebar -->
+    <div class="p-4 border-t border-slate-800/80 bg-slate-900/40">
+      <div class="rounded-2xl p-4 bg-gradient-to-b from-slate-800/90 to-slate-900 border border-slate-700/60 relative overflow-hidden group">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-bold text-amber-400 tracking-wide uppercase flex items-center gap-1.5">
+            <i class="ph-fill ph-crown text-amber-400"></i> Premium
+          </span>
+          <span class="text-[10px] bg-amber-400/10 text-amber-300 px-2 py-0.5 rounded-full font-medium">Pro</span>
+        </div>
+        <h4 id="txt-sidebar-upgrade-title" class="text-xs font-semibold text-white mb-1">Upgrade to Premium</h4>
+        <p id="txt-sidebar-upgrade-desc" class="text-[11px] text-slate-400 leading-snug mb-3">Unlock 15,000+ realistic practice questions and live tutor sessions.</p>
+        <button onclick="openPremiumModal()" class="w-full py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-semibold rounded-lg shadow-sm shadow-blue-500/20 transition-all flex items-center justify-center gap-1.5">
+          <span id="txt-sidebar-upgrade-btn">Upgrade Now</span>
+          <i class="ph-bold ph-arrow-right text-xs"></i>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content Layout -->
+  <div class="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto">
+
+    <!-- Top Sticky Header -->
+    <header class="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-200/80 h-16 flex items-center justify-between px-4 sm:px-8">
+      
+      <!-- Left: Mobile Menu Toggle & Global Search Bar -->
+      <div class="flex items-center gap-3 flex-1 max-w-lg">
+        <button onclick="toggleMobileSidebar()" class="md:hidden p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl">
+          <i class="ph-bold ph-list text-xl"></i>
+        </button>
+
+        <div class="relative w-full max-w-sm">
+          <i class="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-base"></i>
+          <input 
+            type="text" 
+            id="global-search" 
+            placeholder="Search topics, questions, domains..." 
+            class="w-full pl-10 pr-4 py-2 bg-slate-100/80 focus:bg-white border border-transparent focus:border-brand-500 rounded-xl text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all"
+          >
+          <!-- Search Dropdown Results -->
+          <div id="search-dropdown" class="hidden absolute left-0 top-full mt-2 w-full bg-white rounded-2xl shadow-xl border border-slate-200 p-2 z-50"></div>
+        </div>
+      </div>
+
+      <!-- Right: Actions, Language Switcher, Streak & User Profile -->
+      <div class="flex items-center gap-3 sm:gap-4">
+        
+        <!-- Streak Indicator -->
+        <div class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 border border-amber-200/60 rounded-xl text-amber-700 text-xs font-semibold shadow-xs">
+          <i class="ph-fill ph-fire text-amber-500 text-base"></i>
+          <span id="txt-streak">0 Day Streak</span>
+        </div>
+
+        <!-- Language Selector (English / O'zbek tili) -->
+        <div class="relative">
+          <button onclick="toggleLangDropdown()" id="lang-btn" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-slate-200/80 bg-slate-50 hover:bg-slate-100 text-xs font-bold text-slate-700 transition">
+            <span id="lang-flag">🇺🇸</span>
+            <span id="lang-label">EN</span>
+            <i class="ph ph-caret-down text-slate-400 text-xs"></i>
+          </button>
+
+          <!-- Language Dropdown -->
+          <div id="lang-dropdown" class="hidden absolute right-0 mt-2 w-40 bg-white rounded-xl shadow-xl border border-slate-200 py-1.5 z-50">
+            <button onclick="switchLanguage('en')" class="w-full px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-2">
+              <span>🇺🇸</span> English (EN)
+            </button>
+            <button onclick="switchLanguage('uz')" class="w-full px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-2">
+              <span>🇺🇿</span> O'zbek tili (UZ)
+            </button>
+          </div>
+        </div>
+
+        <!-- Notification Bell Dropdown Button -->
+        <div class="relative">
+          <button onclick="toggleNotifications()" class="relative p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition">
+            <i class="ph ph-bell text-xl"></i>
+            <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-brand-600 rounded-full"></span>
+          </button>
+
+          <!-- Notifications Modal / Flyout -->
+          <div id="notifications-flyout" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-slate-200/80 p-4 z-50">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h4 id="txt-notif-title" class="font-bold text-sm text-slate-800">Notifications</h4>
+              <span id="txt-notif-count" class="text-[11px] bg-brand-50 text-brand-600 px-2 py-0.5 rounded-full font-semibold">2 New</span>
+            </div>
+            <div class="mt-3 space-y-2.5">
+              <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex items-start gap-2.5">
+                <i class="ph-fill ph-sparkle text-amber-500 text-base shrink-0 mt-0.5"></i>
+                <div>
+                  <p id="txt-notif-1-title" class="text-xs font-semibold text-slate-800">Welcome to SATWISE!</p>
+                  <p id="txt-notif-1-desc" class="text-[11px] text-slate-500 mt-0.5">Set up your target test date to build your customized timetable.</p>
+                </div>
+              </div>
+              <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex items-start gap-2.5">
+                <i class="ph-fill ph-calendar text-brand-600 text-base shrink-0 mt-0.5"></i>
+                <div>
+                  <p id="txt-notif-2-title" class="text-xs font-semibold text-slate-800">Official SAT Countdown</p>
+                  <p id="txt-notif-2-desc" class="text-[11px] text-slate-500 mt-0.5">Diagnostic scores set to 0. Check your exam tracker.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- User Profile Dropdown Pill -->
+        <div class="relative">
+          <button onclick="toggleUserDropdown()" class="flex items-center gap-2 p-1.5 sm:px-3 sm:py-1.5 rounded-xl border border-slate-200/80 hover:bg-slate-100 transition">
+            <div id="header-avatar-container" class="w-7 h-7 rounded-lg overflow-hidden bg-brand-100 text-brand-700 flex items-center justify-center font-bold text-xs shrink-0">
+              <span id="header-avatar-initial">A</span>
+            </div>
+            <span class="hidden sm:inline text-xs font-semibold text-slate-800" id="header-user-name">Alex Johnson</span>
+            <i class="ph ph-caret-down text-slate-400 text-xs hidden sm:inline"></i>
+          </button>
+
+          <!-- User Menu Dropdown -->
+          <div id="user-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-200 py-2 z-50">
+            <div class="px-4 py-2 border-b border-slate-100">
+              <p class="text-xs font-bold text-slate-800" id="dropdown-user-name">Alex Johnson</p>
+              <p class="text-[11px] text-slate-400 truncate" id="dropdown-user-email">alex.johnson@example.com</p>
+            </div>
+            <button onclick="navigateTo('profile')" class="w-full px-4 py-2 text-left text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2">
+              <i class="ph ph-user"></i> <span data-i18n="nav_profile">Profile</span>
+            </button>
+            <button onclick="navigateTo('settings')" class="w-full px-4 py-2 text-left text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2">
+              <i class="ph ph-gear"></i> <span data-i18n="nav_settings">Settings</span>
+            </button>
+            <button onclick="openLoginModal()" class="w-full px-4 py-2 text-left text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2">
+              <i class="ph ph-sign-in"></i> <span id="txt-switch-user">Switch / Login</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 p-4 sm:p-8 max-w-7xl w-full mx-auto space-y-8">
+      
+      <!-- ================= SECTION 1: OVERVIEW ================= -->
+      <section id="section-overview" class="space-y-6">
+        <!-- Welcome Hero Banner -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
+                <span id="welcome-greeting">Good morning</span>, <span id="welcome-name" class="text-brand-600">Alex</span>!
+              </h1>
+              <span class="text-2xl">👋</span>
+            </div>
+            <p id="welcome-subtitle" class="text-sm text-slate-500 mt-1">Small steps today. A higher SAT score tomorrow.</p>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <button onclick="openDateModal()" class="px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-50 custom-shadow transition flex items-center gap-2">
+              <i class="ph ph-calendar text-brand-600 text-sm"></i>
+              <span id="overview-btn-date">SAT Date: Sep 26, 2026</span>
+            </button>
+            <button onclick="triggerNoTests()" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-semibold shadow-sm shadow-brand-500/30 transition flex items-center gap-2">
+              <i class="ph ph-play-circle text-base"></i>
+              <span class="btn-start-txt">Start Practicing</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Primary Metric Cards (All Initial Scores starting strictly at 0) -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- Latest Score -->
+          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 custom-shadow flex flex-col justify-between">
+            <span id="txt-stat-latest" class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Latest Score</span>
+            <div class="my-2">
+              <div class="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight" id="overview-latest-score">0</div>
+              <div id="txt-stat-diagnostic" class="text-[11px] text-slate-400 mt-0.5">Initial diagnostic pending</div>
+            </div>
+            <div class="text-xs font-medium text-slate-500 flex items-center gap-1.5 pt-2 border-t border-slate-100">
+              <span class="w-2 h-2 rounded-full bg-slate-300"></span>
+              <span><span id="txt-target-prefix">Target</span>: <b class="text-slate-800">1500</b></span>
+            </div>
+          </div>
+
+          <!-- Target Score -->
+          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 custom-shadow flex flex-col justify-between">
+            <span id="txt-stat-target" class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Target Score</span>
+            <div class="my-2">
+              <div class="text-3xl sm:text-4xl font-black text-brand-600 tracking-tight">1500</div>
+              <div id="txt-stat-goal" class="text-[11px] text-slate-400 mt-0.5">Goal: Top 1% Percentile</div>
+            </div>
+            <div class="text-xs font-medium text-slate-500 flex items-center gap-1.5 pt-2 border-t border-slate-100">
+              <i class="ph-bold ph-target text-brand-600 text-xs"></i>
+              <span><span id="txt-remaining-prefix">Remaining</span>: <b>1500 pts</b></span>
+            </div>
+          </div>
+
+          <!-- Math Section Score -->
+          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 custom-shadow flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+              <span id="txt-stat-math" class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Math</span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-brand-600">800 Max</span>
+            </div>
+            <div class="my-2">
+              <div class="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">0</div>
+              <div id="txt-math-accuracy" class="text-[11px] text-slate-400 mt-0.5">0% Accuracy (0/0 solved)</div>
+            </div>
+            <div class="text-xs font-medium text-slate-500 flex items-center gap-1.5 pt-2 border-t border-slate-100">
+              <i class="ph ph-calculator text-blue-500"></i>
+              <span><span id="txt-target-math-prefix">Target</span>: 750+</span>
+            </div>
+          </div>
+
+          <!-- R&W Section Score -->
+          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 custom-shadow flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+              <span id="txt-stat-rw" class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Reading & Writing</span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 text-purple-600">800 Max</span>
+            </div>
+            <div class="my-2">
+              <div class="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">0</div>
+              <div id="txt-rw-accuracy" class="text-[11px] text-slate-400 mt-0.5">0% Accuracy (0/0 solved)</div>
+            </div>
+            <div class="text-xs font-medium text-slate-500 flex items-center gap-1.5 pt-2 border-t border-slate-100">
+              <i class="ph ph-book-open text-purple-500"></i>
+              <span><span id="txt-target-rw-prefix">Target</span>: 750+</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Middle Grid: Exam Countdown Card + Score Progress Chart -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          <!-- Exam Countdown Card -->
+          <div class="bg-white p-6 rounded-2xl border border-slate-200/80 custom-shadow flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between">
+                <span class="p-2.5 bg-blue-50 text-brand-600 rounded-xl">
+                  <i class="ph-bold ph-calendar text-xl"></i>
+                </span>
+                <span id="txt-official-exam" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600">Official Exam</span>
+              </div>
+              <div class="mt-4">
+                <h3 id="txt-sat-countdown-label" class="text-xs font-medium text-slate-500 uppercase tracking-wider">Your SAT is in</h3>
+                <div class="flex items-baseline gap-2 mt-1">
+                  <span id="countdown-days-overview" class="text-5xl font-black text-slate-900 tracking-tight">--</span>
+                  <span id="txt-countdown-suffix" class="text-slate-500 font-bold text-lg">days</span>
+                </div>
+                <p id="countdown-date-overview" class="text-xs text-slate-500 mt-2 flex items-center gap-1.5">
+                  <i class="ph-bold ph-clock"></i> Target: Calculating...
+                </p>
+              </div>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
+              <button onclick="openDateModal()" class="text-xs font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1">
+                <span id="txt-edit-date">Edit Date</span> <i class="ph-bold ph-arrow-right"></i>
+              </button>
+              <button onclick="navigateTo('countdown')" class="text-xs text-slate-400 hover:text-slate-600">
+                <span id="txt-view-details-1">View Details</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Score Progress Chart Card (Starting from 0 baseline) -->
+          <div class="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200/80 custom-shadow flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h3 id="txt-score-progress-title" class="font-bold text-slate-900 text-sm">Your Score Progress</h3>
+                <p id="txt-score-progress-desc" class="text-xs text-slate-400">Tracking official mock diagnostic scores</p>
+              </div>
+              <button onclick="navigateTo('progress')" class="text-xs font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1">
+                <span id="txt-view-details-2">View Details</span> <i class="ph-bold ph-arrow-right"></i>
+              </button>
+            </div>
+
+            <div class="h-48 w-full">
+              <canvas id="overviewScoreChart"></canvas>
+            </div>
+
+            <div class="flex items-center justify-between pt-3 border-t border-slate-100 text-xs text-slate-500">
+              <span class="flex items-center gap-1.5">
+                <span class="w-3 h-3 rounded-full bg-brand-600 inline-block"></span>
+                <span>Your Score (Baseline: 0)</span>
+              </span>
+              <span class="flex items-center gap-1.5">
+                <span class="w-3 h-0.5 border-b-2 border-dashed border-slate-300 inline-block"></span>
+                <span>Target (1500)</span>
+              </span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Subject Highlights & Quick Practice Row -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+          <!-- Math Module Card -->
+          <div class="bg-white p-6 rounded-2xl border border-slate-200/80 custom-shadow flex flex-col justify-between">
+            <div class="flex items-start justify-between">
+              <div>
+                <span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-blue-50 text-blue-700">Section 1</span>
+                <h3 class="text-lg font-bold text-slate-900 mt-2">SAT Math</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Algebra, Advanced Math, Geometry & Data Analysis</p>
+              </div>
+              <div class="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-brand-600">
+                <i class="ph-bold ph-function text-2xl"></i>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 my-5 p-4 rounded-xl bg-slate-50 border border-slate-100">
+              <div>
+                <span class="text-[11px] text-slate-400 font-medium">Accuracy</span>
+                <p class="text-xl font-bold text-slate-800">0%</p>
+              </div>
+              <div>
+                <span class="text-[11px] text-slate-400 font-medium">Questions Completed</span>
+                <p class="text-xl font-bold text-slate-800">0 / 420</p>
+              </div>
+            </div>
+
+            <button onclick="triggerNoTests()" class="w-full py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-semibold shadow-sm transition flex items-center justify-center gap-2">
+              <i class="ph ph-play-circle text-base"></i>
+              <span class="btn-start-txt">Start Practicing</span>
+            </button>
+          </div>
+
+          <!-- Reading & Writing Module Card -->
+          <div class="bg-white p-6 rounded-2xl border border-slate-200/80 custom-shadow flex flex-col justify-between">
+            <div class="flex items-start justify-between">
+              <div>
+                <span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-purple-50 text-purple-700">Section 2</span>
+                <h3 class="text-lg font-bold text-slate-900 mt-2">Reading & Writing</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Information, Ideas, Craft, Structure & Grammar</p>
+              </div>
+              <div class="w-12 h-12 rounded-2xl bg-purple-50 flex items-center justify-center text-purple-600">
+                <i class="ph-bold ph-book-open-text text-2xl"></i>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 my-5 p-4 rounded-xl bg-slate-50 border border-slate-100">
+              <div>
+                <span class="text-[11px] text-slate-400 font-medium">Accuracy</span>
+                <p class="text-xl font-bold text-slate-800">0%</p>
+              </div>
+              <div>
+                <span class="text-[11px] text-slate-400 font-medium">Questions Completed</span>
+                <p class="text-xl font-bold text-slate-800">0 / 365</p>
+              </div>
+            </div>
+
+            <button onclick="triggerNoTests()" class="w-full py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-semibold shadow-sm transition flex items-center justify-center gap-2">
+              <i class="ph ph-play-circle text-base"></i>
+              <span class="btn-start-txt">Start Practicing</span>
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Recommended For You Row -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200/80 custom-shadow">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h3 id="txt-rec-title" class="font-bold text-slate-900 text-sm">Recommended for You</h3>
+              <p id="txt-rec-sub" class="text-xs text-slate-400">Curated foundational topics based on 0 starting baseline</p>
+            </div>
+            <button onclick="navigateTo('practice')" class="text-xs font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1">
+              <span id="txt-view-all">View All</span> <i class="ph-bold ph-arrow-right"></i>
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Topic 1 -->
+            <div class="p-4 rounded-xl border border-slate-200/80 hover:border-brand-500/50 transition bg-slate-50/50 flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">Math Domain</span>
+                  <span class="text-xs text-slate-400 flex items-center gap-1"><i class="ph ph-clock"></i> 15m</span>
+                </div>
+                <h4 class="font-bold text-slate-800 text-sm">Linear Equations & Systems</h4>
+                <p class="text-xs text-slate-500 mt-1">Foundation algebra concepts tested across both modules.</p>
+              </div>
+              <button onclick="triggerNoTests()" class="mt-4 w-full py-2 bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition">
+                Start
+              </button>
+            </div>
+
+            <!-- Topic 2 -->
+            <div class="p-4 rounded-xl border border-slate-200/80 hover:border-brand-500/50 transition bg-slate-50/50 flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full">R&W Domain</span>
+                  <span class="text-xs text-slate-400 flex items-center gap-1"><i class="ph ph-clock"></i> 12m</span>
+                </div>
+                <h4 class="font-bold text-slate-800 text-sm">Standard English Conventions</h4>
+                <p class="text-xs text-slate-500 mt-1">Punctuation, clause boundaries, and subject-verb agreement.</p>
+              </div>
+              <button onclick="triggerNoTests()" class="mt-4 w-full py-2 bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition">
+                Start
+              </button>
+            </div>
+
+            <!-- Topic 3 -->
+            <div class="p-4 rounded-xl border border-slate-200/80 hover:border-brand-500/50 transition bg-slate-50/50 flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Math Domain</span>
+                  <span class="text-xs text-slate-400 flex items-center gap-1"><i class="ph ph-clock"></i> 18m</span>
+                </div>
+                <h4 class="font-bold text-slate-800 text-sm">Ratios, Rates & Proportions</h4>
+                <p class="text-xs text-slate-500 mt-1">Core Problem Solving and Data Analysis essentials.</p>
+              </div>
+              <button onclick="triggerNoTests()" class="mt-4 w-full py-2 bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition">
+                Start
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SECTION 2: SAT PRACTICE ================= -->
+      <section id="section-practice" class="space-y-6 hidden">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-2xl font-bold text-slate-900">SAT Practice by Domain</h2>
+            <p class="text-xs sm:text-sm text-slate-500">Explore official Digital SAT question domains and individual topics.</p>
+          </div>
+          <button onclick="triggerNoTests()" class="px-4 py-2 bg-brand-600 text-white rounded-xl text-xs font-semibold hover:bg-brand-700 transition">
+            <span class="btn-start-txt">Start Practicing</span>
+          </button>
+        </div>
+
+        <!-- Section Tabs -->
+        <div class="flex border-b border-slate-200 gap-6">
+          <button onclick="switchPracticeTab('math')" id="tab-btn-math" class="pb-3 text-sm font-bold text-brand-600 border-b-2 border-brand-600 transition flex items-center gap-2">
+            <i class="ph-bold ph-calculator"></i> Math (4 Domains)
+          </button>
+          <button onclick="switchPracticeTab('rw')" id="tab-btn-rw" class="pb-3 text-sm font-semibold text-slate-400 hover:text-slate-700 transition flex items-center gap-2">
+            <i class="ph-bold ph-book-open"></i> Reading & Writing (4 Domains)
+          </button>
+        </div>
+
+        <!-- Math Topics Grid -->
+        <div id="practice-math-content" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Domain 1 -->
+          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 custom-shadow space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-brand-600 bg-blue-50 px-2.5 py-1 rounded-lg">Domain 1</span>
+              <span class="text-xs text-slate-400">~35% of Test</span>
+            </div>
+            <h3 class="font-bold text-slate-900">Algebra</h3>
+            <p class="text-xs text-slate-500">Linear equations in 1 variable, linear equations in 2 variables, systems of linear equations, linear inequalities.</p>
+            <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
+              <span class="text-xs text-slate-400">Score: 0 / 800</span>
+              <button onclick="triggerNoTests()" class="px-3 py-1.5 bg-slate-100 hover:bg-brand-600 hover:text-white rounded-lg text-xs font-semibold text-slate-700 transition">
+                Start
+              </button>
+            </div>
+          </div>
+
+          <!-- Domain 2 -->
+          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 custom-shadow space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-brand-600 bg-blue-50 px-2.5 py-1 rounded-lg">Domain 2</span>
+              <span class="text-xs text-slate-400">~35% of Test</span>
+            </div>
+            <h3 class="font-bold text-slate-900">Advanced Math</h3>
+            <p class="text-xs text-slate-500">Equivalent expressions, nonlinear equations in 1 variable, systems of equations in 2 variables, nonlinear functions.</p>
+            <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
+              <span class="text-xs text-slate-400">Score: 0 / 800</span>
+              <button onclick="triggerNoTests()" class="px-3 py-1.5 bg-slate-100 hover:bg-brand-600 hover:text-white rounded-lg text-xs font-semibold text-slate-700 transition">
+                Start
+              </button>
+            </div>
+          </div>
+
+          <!-- Domain 3 -->
+          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 custom-shadow space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-brand-600 bg-blue-50 px-2.5 py-1 rounded-lg">Domain 3</span>
+              <span class="text-xs text-slate-400">~15% of Test</span>
+            </div>
+            <h3 class="font-bold text-slate-900">Problem-Solving & Data Analysis</h3>
+            <p class="text-xs text-slate-500">Ratios, rates, proportional relationships, units, percentages, one-variable data, two-variable data, probability.</p>
+            <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
+              <span class="text-xs text-slate-400">Score: 0 / 800</span>
+              <button onclick="triggerNoTests()" class="px-3 py-1.5 bg-slate-100 hover:bg-brand-600 hover:text-white rounded-lg text-xs font-semibold text-slate-700 transition">
+                Start
+              </button>
+            </div>
+          </div>
+
+          <!-- Domain 4 -->
+          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 custom-shadow space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-brand-600 bg-blue-50 px-2.5 py-1 rounded-lg">Domain 4</span>
+              <span class="text-xs text-slate-400">~15% of Test</span>
+            </div>
+            <h3 class="font-bold text-slate-900">Geometry & Trigonometry</h3>
+            <p class="text-xs text-slate-500">Area and volume, lines, angles, triangles, right triangles, trigonometry, and circles.</p>
+            <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
+              <span class="text-xs text-slate-400">Score: 0 / 800</span>
+              <button onclick="triggerNoTests()" class="px-3 py-1.5 bg-slate-100 hover:bg-brand-600 hover:text-white rounded-lg text-xs font-semibold text-slate-700 transition">
+                Start
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- R&W Topics Grid (Hidden by default) -->
+        <div id="practice-rw-content" class="grid grid-cols-1 md:grid-cols-2 gap-4 hidden">
+          <!-- RW Domain 1 -->
+          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 custom-shadow space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-purple-600 bg-purple-50 px-2.5 py-1 rounded-lg">Domain 1</span>
+              <span class="text-xs text-slate-400">~26% of Test</span>
+            </div>
+            <h3 class="font-bold text-slate-900">Information & Ideas</h3>
+            <p class="text-xs text-slate-500">Central ideas and details, command of textual evidence, command of quantitative evidence, inferences.</p>
+            <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
+              <span class="text-xs text-slate-400">Score: 0 / 800</span>
+              <button onclick="triggerNoTests()" class="px-3 py-1.5 bg-slate-100 hover:bg-purple-600 hover:text-white rounded-lg text-xs font-semibold text-slate-700 transition">
+                Start
+              </button>
+            </div>
+          </div>
+
+          <!-- RW Domain 2 -->
+          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 custom-shadow space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-purple-600 bg-purple-50 px-2.5 py-1 rounded-lg">Domain 2</span>
+              <span class="text-xs text-slate-400">~28% of Test</span>
+            </div>
+            <h3 class="font-bold text-slate-900">Craft & Structure</h3>
+            <p class="text-xs text-slate-500">Words in context, text structure and purpose, cross-text connections.</p>
+            <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
+              <span class="text-xs text-slate-400">Score: 0 / 800</span>
+              <button onclick="triggerNoTests()" class="px-3 py-1.5 bg-slate-100 hover:bg-purple-600 hover:text-white rounded-lg text-xs font-semibold text-slate-700 transition">
+                Start
+              </button>
+            </div>
+          </div>
+
+          <!-- RW Domain 3 -->
+          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 custom-shadow space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-purple-600 bg-purple-50 px-2.5 py-1 rounded-lg">Domain 3</span>
+              <span class="text-xs text-slate-400">~20% of Test</span>
+            </div>
+            <h3 class="font-bold text-slate-900">Expression of Ideas</h3>
+            <p class="text-xs text-slate-500">Rhetorical synthesis, effective transitions, rhetorical purpose and cohesion.</p>
+            <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
+              <span class="text-xs text-slate-400">Score: 0 / 800</span>
+              <button onclick="triggerNoTests()" class="px-3 py-1.5 bg-slate-100 hover:bg-purple-600 hover:text-white rounded-lg text-xs font-semibold text-slate-700 transition">
+                Start
+              </button>
+            </div>
+          </div>
+
+          <!-- RW Domain 4 -->
+          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 custom-shadow space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-purple-600 bg-purple-50 px-2.5 py-1 rounded-lg">Domain 4</span>
+              <span class="text-xs text-slate-400">~26% of Test</span>
+            </div>
+            <h3 class="font-bold text-slate-900">Standard English Conventions</h3>
+            <p class="text-xs text-slate-500">Sentence boundaries, subject-verb agreement, modifier placement, verb tense, and apostrophes.</p>
+            <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
+              <span class="text-xs text-slate-400">Score: 0 / 800</span>
+              <button onclick="triggerNoTests()" class="px-3 py-1.5 bg-slate-100 hover:bg-purple-600 hover:text-white rounded-lg text-xs font-semibold text-slate-700 transition">
+                Start
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SECTION 3: MY PROGRESS ================= -->
+      <section id="section-progress" class="space-y-6 hidden">
+        <div>
+          <h2 class="text-2xl font-bold text-slate-900">My Progress & Analytics</h2>
+          <p class="text-xs sm:text-sm text-slate-500">All analytics start from 0 baseline until practice exams are submitted.</p>
+        </div>
+
+        <!-- 4 Stats Banner -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 custom-shadow">
+            <span class="text-xs font-medium text-slate-400">Estimated Total Score</span>
+            <p class="text-3xl font-black text-slate-900 mt-1">0 <span class="text-xs font-normal text-slate-400">/ 1600</span></p>
+            <span class="text-[11px] text-slate-400 block mt-2">Target: 1500</span>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 custom-shadow">
+            <span class="text-xs font-medium text-slate-400">Overall Accuracy</span>
+            <p class="text-3xl font-black text-slate-900 mt-1">0%</p>
+            <span class="text-[11px] text-slate-400 block mt-2">0 correct out of 0</span>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 custom-shadow">
+            <span class="text-xs font-medium text-slate-400">Study Time Logged</span>
+            <p class="text-3xl font-black text-slate-900 mt-1">0h <span class="text-xs font-normal text-slate-400">00m</span></p>
+            <span class="text-[11px] text-slate-400 block mt-2">Active practice sessions</span>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 custom-shadow">
+            <span class="text-xs font-medium text-slate-400">Completed Questions</span>
+            <p class="text-3xl font-black text-slate-900 mt-1">0</p>
+            <span class="text-[11px] text-slate-400 block mt-2">Across all modules</span>
+          </div>
+        </div>
+
+        <!-- Progress Deep Dive Chart -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200/80 custom-shadow">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-bold text-slate-900 text-sm">Official Diagnostic Score Trend</h3>
+            <span class="text-xs bg-slate-100 text-slate-600 px-3 py-1 rounded-full font-medium">All Scores = 0 Baseline</span>
+          </div>
+          <div class="h-64 w-full">
+            <canvas id="detailedProgressChart"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SECTION 4: BOOK A COURSE ================= -->
+      <section id="section-book-course" class="space-y-6 hidden">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-2xl font-bold text-slate-900">Book an SAT Expert Teacher</h2>
+            <p class="text-xs sm:text-sm text-slate-500">1-on-1 personalized lessons with 99th percentile SAT instructors.</p>
+          </div>
+          <!-- Subject Filters -->
+          <div class="flex items-center gap-2">
+            <button onclick="filterTeachers('all')" id="filter-teacher-all" class="px-3 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-semibold">All</button>
+            <button onclick="filterTeachers('Math')" id="filter-teacher-math" class="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 text-xs font-semibold">Math</button>
+            <button onclick="filterTeachers('Reading')" id="filter-teacher-rw" class="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 text-xs font-semibold">Reading & Writing</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="teachers-grid">
+          <!-- Teacher 1 -->
+          <div class="teacher-card bg-white p-6 rounded-2xl border border-slate-200/80 custom-shadow flex flex-col justify-between" data-subject="Reading">
+            <div>
+              <div class="flex items-start gap-4">
+                <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=120&auto=format&fit=crop&q=80" alt="Sarah Johnson" class="w-14 h-14 rounded-2xl object-cover">
+                <div>
+                  <h4 class="font-bold text-slate-900 text-base">Sarah Johnson</h4>
+                  <p class="text-xs text-brand-600 font-semibold">SAT R&W • 8+ yrs exp</p>
+                  <div class="flex items-center gap-1 mt-1 text-xs text-amber-500 font-bold">
+                    <i class="ph-fill ph-star"></i> 4.9 <span class="text-slate-400 font-normal">(1.2k reviews)</span>
+                  </div>
+                </div>
+              </div>
+              <p class="text-xs text-slate-500 mt-4">Former Ivy League admissions advisor specializing in Rhetorical synthesis & high-difficulty Reading.</p>
+              <div class="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between text-xs">
+                <span class="text-slate-400">Available:</span>
+                <span class="font-semibold text-slate-700">Mon, Wed, Fri</span>
+              </div>
+            </div>
+            <div class="mt-6 flex items-center justify-between">
+              <div>
+                <span class="text-lg font-black text-slate-900">$60</span>
+                <span class="text-xs text-slate-400">/month</span>
+              </div>
+              <button onclick="openBookingModal('Sarah Johnson', '$60/month', 'Reading & Writing')" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-xl transition">
+                Book Lesson
+              </button>
+            </div>
+          </div>
+
+          <!-- Teacher 2 -->
+          <div class="teacher-card bg-white p-6 rounded-2xl border border-slate-200/80 custom-shadow flex flex-col justify-between" data-subject="Math">
+            <div>
+              <div class="flex items-start gap-4">
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&auto=format&fit=crop&q=80" alt="Michael Chen" class="w-14 h-14 rounded-2xl object-cover">
+                <div>
+                  <h4 class="font-bold text-slate-900 text-base">Michael Chen</h4>
+                  <p class="text-xs text-brand-600 font-semibold">SAT Math • 6+ yrs exp</p>
+                  <div class="flex items-center gap-1 mt-1 text-xs text-amber-500 font-bold">
+                    <i class="ph-fill ph-star"></i> 4.8 <span class="text-slate-400 font-normal">(890 reviews)</span>
+                  </div>
+                </div>
+              </div>
+              <p class="text-xs text-slate-500 mt-4">MIT Graduate & Perfect 800 Math Scorer. Master Desmos graphing shortcuts and Advanced Algebra fast.</p>
+              <div class="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between text-xs">
+                <span class="text-slate-400">Available:</span>
+                <span class="font-semibold text-slate-700">Tue, Thu, Sat</span>
+              </div>
+            </div>
+            <div class="mt-6 flex items-center justify-between">
+              <div>
+                <span class="text-lg font-black text-slate-900">$55</span>
+                <span class="text-xs text-slate-400">/month</span>
+              </div>
+              <button onclick="openBookingModal('Michael Chen', '$55/month', 'SAT Math')" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-xl transition">
+                Book Lesson
+              </button>
+            </div>
+          </div>
+
+          <!-- Teacher 3 -->
+          <div class="teacher-card bg-white p-6 rounded-2xl border border-slate-200/80 custom-shadow flex flex-col justify-between" data-subject="Math">
+            <div>
+              <div class="flex items-start gap-4">
+                <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=120&auto=format&fit=crop&q=80" alt="Emily Davis" class="w-14 h-14 rounded-2xl object-cover">
+                <div>
+                  <h4 class="font-bold text-slate-900 text-base">Emily Davis</h4>
+                  <p class="text-xs text-brand-600 font-semibold">Full Test Prep • 10+ yrs</p>
+                  <div class="flex items-center gap-1 mt-1 text-xs text-amber-500 font-bold">
+                    <i class="ph-fill ph-star"></i> 4.9 <span class="text-slate-400 font-normal">(1.1k reviews)</span>
+                  </div>
+                </div>
+              </div>
+              <p class="text-xs text-slate-500 mt-4">Experienced test strategist guiding students from 0 baseline to 1500+ across all 8 SAT sub-domains.</p>
+              <div class="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between text-xs">
+                <span class="text-slate-400">Available:</span>
+                <span class="font-semibold text-slate-700">Daily flexible</span>
+              </div>
+            </div>
+            <div class="mt-6 flex items-center justify-between">
+              <div>
+                <span class="text-lg font-black text-slate-900">$65</span>
+                <span class="text-xs text-slate-400">/month</span>
+              </div>
+              <button onclick="openBookingModal('Emily Davis', '$65/month', 'Full Test Prep')" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-xl transition">
+                Book Lesson
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SECTION 5: EXAM COUNTDOWN ================= -->
+      <section id="section-countdown" class="space-y-6 hidden">
+        <div>
+          <h2 class="text-2xl font-bold text-slate-900">Exam Countdown & Milestones</h2>
+          <p class="text-xs sm:text-sm text-slate-500">Pick your official test date to track remaining prep days and study benchmarks.</p>
+        </div>
+
+        <div class="bg-white p-8 rounded-3xl border border-slate-200/80 custom-shadow flex flex-col md:flex-row items-center justify-between gap-6">
+          <div class="space-y-2 text-center md:text-left">
+            <span class="px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-brand-600">Official Exam Target</span>
+            <div class="flex items-baseline gap-3 justify-center md:justify-start">
+              <span id="tracker-days" class="text-6xl sm:text-7xl font-black text-slate-900 tracking-tight">--</span>
+              <span class="text-slate-500 text-xl font-bold">Days Remaining</span>
+            </div>
+            <p id="tracker-date-display" class="text-sm text-slate-500">Your scheduled test date: Calculating...</p>
+          </div>
+
+          <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+            <button onclick="openDateModal()" class="px-6 py-3 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2">
+              <i class="ph-bold ph-calendar-plus text-base"></i> Change Exam Date
+            </button>
+            <button onclick="triggerNoTests()" class="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-xl transition flex items-center justify-center gap-2">
+              <i class="ph-bold ph-play"></i> Take Practice Mock
+            </button>
+          </div>
+        </div>
+
+        <!-- Milestones list -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200/80 custom-shadow space-y-4">
+          <h3 class="font-bold text-slate-900 text-sm">Recommended Study Milestones</h3>
+          
+          <div class="space-y-3">
+            <div class="flex items-center gap-4 p-3 rounded-xl bg-slate-50 border border-slate-100">
+              <div class="w-8 h-8 rounded-full bg-blue-100 text-brand-600 flex items-center justify-center font-bold text-xs">1</div>
+              <div class="flex-1">
+                <h4 class="text-xs font-bold text-slate-800">Initial Baseline Diagnostics</h4>
+                <p class="text-[11px] text-slate-400">Current state: 0 score baseline. Complete diagnostic test.</p>
+              </div>
+              <span class="text-xs font-semibold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full">Pending</span>
+            </div>
+
+            <div class="flex items-center gap-4 p-3 rounded-xl bg-slate-50 border border-slate-100">
+              <div class="w-8 h-8 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-xs">2</div>
+              <div class="flex-1">
+                <h4 class="text-xs font-bold text-slate-800">Core Domain Mastery (Algebra & Conventions)</h4>
+                <p class="text-[11px] text-slate-400">Target: Reach 80%+ accuracy across foundational sub-topics.</p>
+              </div>
+              <span class="text-xs font-semibold text-slate-400 bg-slate-100 px-2.5 py-1 rounded-full">Locked</span>
+            </div>
+
+            <div class="flex items-center gap-4 p-3 rounded-xl bg-slate-50 border border-slate-100">
+              <div class="w-8 h-8 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-xs">3</div>
+              <div class="flex-1">
+                <h4 class="text-xs font-bold text-slate-800">Full-Length Timed Bluebook Mock Exam</h4>
+                <p class="text-[11px] text-slate-400">Simulate official digital testing conditions 2 weeks before exam.</p>
+              </div>
+              <span class="text-xs font-semibold text-slate-400 bg-slate-100 px-2.5 py-1 rounded-full">Locked</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SECTION 6: STUDY PLANNER ================= -->
+      <section id="section-planner" class="space-y-6 hidden">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-2xl font-bold text-slate-900">Weekly Study Planner</h2>
+            <p class="text-xs sm:text-sm text-slate-500">Plan your custom study tasks. Check items off when completed to cross them out!</p>
+          </div>
+          <button onclick="openAddActivityModal()" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold shadow-sm transition flex items-center gap-2 self-start sm:self-auto">
+            <i class="ph-bold ph-plus"></i> Add Activity
+          </button>
+        </div>
+
+        <!-- Weekly Task Columns -->
+        <div class="grid grid-cols-1 md:grid-cols-7 gap-3" id="planner-week-grid">
+          <!-- Mon -->
+          <div class="bg-white p-3 rounded-2xl border border-slate-200/80 custom-shadow flex flex-col justify-between" data-day="Mon">
+            <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
+              <span class="text-xs font-bold text-slate-500 uppercase">Mon</span>
+              <button onclick="openAddActivityModal('Mon')" class="text-brand-600 hover:text-brand-700 p-1 text-xs"><i class="ph-bold ph-plus"></i></button>
+            </div>
+            <div class="space-y-2 min-h-[140px]" id="planner-tasks-Mon"></div>
+          </div>
+          <!-- Tue -->
+          <div class="bg-white p-3 rounded-2xl border border-slate-200/80 custom-shadow flex flex-col justify-between" data-day="Tue">
+            <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
+              <span class="text-xs font-bold text-slate-500 uppercase">Tue</span>
+              <button onclick="openAddActivityModal('Tue')" class="text-brand-600 hover:text-brand-700 p-1 text-xs"><i class="ph-bold ph-plus"></i></button>
+            </div>
+            <div class="space-y-2 min-h-[140px]" id="planner-tasks-Tue"></div>
+          </div>
+          <!-- Wed -->
+          <div class="bg-white p-3 rounded-2xl border border-slate-200/80 custom-shadow flex flex-col justify-between" data-day="Wed">
+            <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
+              <span class="text-xs font-bold text-slate-500 uppercase">Wed</span>
+              <button onclick="openAddActivityModal('Wed')" class="text-brand-600 hover:text-brand-700 p-1 text-xs"><i class="ph-bold ph-plus"></i></button>
+            </div>
+            <div class="space-y-2 min-h-[140px]" id="planner-tasks-Wed"></div>
+          </div>
+          <!-- Thu -->
+          <div class="bg-white p-3 rounded-2xl border border-slate-200/80 custom-shadow flex flex-col justify-between" data-day="Thu">
+            <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
+              <span class="text-xs font-bold text-slate-500 uppercase">Thu</span>
+              <button onclick="openAddActivityModal('Thu')" class="text-brand-600 hover:text-brand-700 p-1 text-xs"><i class="ph-bold ph-plus"></i></button>
+            </div>
+            <div class="space-y-2 min-h-[140px]" id="planner-tasks-Thu"></div>
+          </div>
+          <!-- Fri -->
+          <div class="bg-white p-3 rounded-2xl border border-slate-200/80 custom-shadow flex flex-col justify-between" data-day="Fri">
+            <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
+              <span class="text-xs font-bold text-slate-500 uppercase">Fri</span>
+              <button onclick="openAddActivityModal('Fri')" class="text-brand-600 hover:text-brand-700 p-1 text-xs"><i class="ph-bold ph-plus"></i></button>
+            </div>
+            <div class="space-y-2 min-h-[140px]" id="planner-tasks-Fri"></div>
+          </div>
+          <!-- Sat -->
+          <div class="bg-white p-3 rounded-2xl border border-slate-200/80 custom-shadow flex flex-col justify-between" data-day="Sat">
+            <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
+              <span class="text-xs font-bold text-slate-500 uppercase">Sat</span>
+              <button onclick="openAddActivityModal('Sat')" class="text-brand-600 hover:text-brand-700 p-1 text-xs"><i class="ph-bold ph-plus"></i></button>
+            </div>
+            <div class="space-y-2 min-h-[140px]" id="planner-tasks-Sat"></div>
+          </div>
+          <!-- Sun -->
+          <div class="bg-white p-3 rounded-2xl border border-slate-200/80 custom-shadow flex flex-col justify-between" data-day="Sun">
+            <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
+              <span class="text-xs font-bold text-slate-500 uppercase">Sun</span>
+              <button onclick="openAddActivityModal('Sun')" class="text-brand-600 hover:text-brand-700 p-1 text-xs"><i class="ph-bold ph-plus"></i></button>
+            </div>
+            <div class="space-y-2 min-h-[140px]" id="planner-tasks-Sun"></div>
+          </div>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-blue-50/60 border border-blue-100 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <i class="ph-fill ph-lightbulb text-brand-600 text-2xl"></i>
+            <p class="text-xs text-slate-700">Need personalized AI pacing according to your strengths and weaknesses?</p>
+          </div>
+          <button onclick="openPremiumModal()" class="px-4 py-2 bg-brand-600 text-white rounded-xl text-xs font-bold hover:bg-brand-700 transition">
+            Auto-Schedule (Pro)
+          </button>
+        </div>
+      </section>
+
+      <!-- ================= SECTION 7: BOOKMARKS ================= -->
+      <section id="section-bookmarks" class="space-y-6 hidden">
+        <div>
+          <h2 class="text-2xl font-bold text-slate-900">Bookmarks & Saved Items</h2>
+          <p class="text-xs sm:text-sm text-slate-500">Review difficult questions you flagged during your test practice.</p>
+        </div>
+
+        <div class="bg-white p-12 rounded-3xl border border-slate-200/80 custom-shadow text-center max-w-md mx-auto space-y-4">
+          <div class="w-16 h-16 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto text-3xl">
+            <i class="ph ph-bookmark-simple"></i>
+          </div>
+          <h3 class="font-bold text-slate-800 text-base">No Saved Questions Yet</h3>
+          <p class="text-xs text-slate-500">When practicing SAT math or reading questions, tap the bookmark icon to save tricky problems for quick review.</p>
+          <button onclick="triggerNoTests()" class="px-4 py-2.5 bg-brand-600 text-white rounded-xl text-xs font-bold hover:bg-brand-700 transition">
+            <span class="btn-start-txt">Start Practicing</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- ================= SECTION 8: PROFILE ================= -->
+      <section id="section-profile" class="space-y-6 hidden">
+        <div>
+          <h2 class="text-2xl font-bold text-slate-900">Student Profile</h2>
+          <p class="text-xs sm:text-sm text-slate-500">Manage your student details, academic targets, and subscription status.</p>
+        </div>
+
+        <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 custom-shadow max-w-2xl space-y-6">
+          <div class="flex items-center gap-5">
+            <div class="relative group">
+              <div id="profile-avatar-container" class="w-20 h-20 rounded-2xl overflow-hidden bg-brand-100 text-brand-700 border-2 border-brand-500/20 flex items-center justify-center font-bold text-2xl shadow-sm">
+                <span id="profile-avatar-initial">A</span>
+              </div>
+              <label for="profile-avatar-file-input" class="absolute -bottom-1 -right-1 w-7 h-7 bg-brand-600 hover:bg-brand-700 text-white rounded-full flex items-center justify-center cursor-pointer shadow-md transition" title="Upload new photo">
+                <i class="ph-bold ph-camera text-xs"></i>
+                <input type="file" id="profile-avatar-file-input" accept="image/*" class="hidden" onchange="handleAvatarUpload(event)">
+              </label>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-slate-900" id="profile-display-name">Alex Johnson</h3>
+              <p class="text-xs text-slate-500" id="profile-display-email">alex.johnson@example.com</p>
+              <span id="profile-status-badge" class="mt-2 inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600">Free Tier</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-slate-100">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Full Name</label>
+              <input type="text" id="profile-input-name" value="Alex Johnson" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-brand-500/20 focus:outline-none">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Target SAT Score</label>
+              <input type="number" id="profile-input-target" value="1500" min="400" max="1600" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-brand-500/20 focus:outline-none">
+            </div>
+
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-bold text-slate-700 mb-1">Target School / Dream University</label>
+              <input type="text" id="profile-input-school" value="Stanford University" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-brand-500/20 focus:outline-none">
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between pt-4 border-t border-slate-100">
+            <button onclick="saveProfile()" class="px-5 py-2.5 bg-brand-600 text-white rounded-xl text-xs font-bold hover:bg-brand-700 transition">
+              Save Profile Changes
+            </button>
+            <button onclick="openLoginModal()" class="text-xs font-semibold text-slate-500 hover:text-slate-800">
+              Sign In Different Account
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SECTION 9: SETTINGS ================= -->
+      <section id="section-settings" class="space-y-6 hidden">
+        <div>
+          <h2 class="text-2xl font-bold text-slate-900">Platform Settings</h2>
+          <p class="text-xs sm:text-sm text-slate-500">Configure platform notifications, study reminders, and display preferences.</p>
+        </div>
+
+        <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 custom-shadow max-w-2xl space-y-6">
+          <div class="space-y-4">
+            <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
+              <div>
+                <p class="text-xs font-bold text-slate-800">Daily Study Reminders</p>
+                <p class="text-[11px] text-slate-400">Receive morning notification to preserve your study streak</p>
+              </div>
+              <input type="checkbox" checked class="w-4 h-4 rounded text-brand-600 focus:ring-brand-500">
+            </div>
+
+            <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
+              <div>
+                <p class="text-xs font-bold text-slate-800">Desmos Built-in Calculator</p>
+                <p class="text-[11px] text-slate-400">Enable full graphing calculator panel during tests</p>
+              </div>
+              <input type="checkbox" checked class="w-4 h-4 rounded text-brand-600 focus:ring-brand-500">
+            </div>
+
+            <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
+              <div>
+                <p class="text-xs font-bold text-slate-800">Sound Effects & Timers</p>
+                <p class="text-[11px] text-slate-400">Play auditory cues when practice test section finishes</p>
+              </div>
+              <input type="checkbox" class="w-4 h-4 rounded text-brand-600 focus:ring-brand-500">
+            </div>
+          </div>
+
+          <div class="pt-4 border-t border-slate-100 flex items-center justify-between">
+            <button onclick="showToast(state.lang === 'uz' ? 'Sozlamalar saqlandi' : 'Settings saved successfully', 'success')" class="px-5 py-2.5 bg-brand-600 text-white rounded-xl text-xs font-bold hover:bg-brand-700 transition">
+              Save Settings
+            </button>
+            <button onclick="triggerNoTests()" class="text-xs font-semibold text-slate-500 hover:text-slate-700">
+              Export Progress Data
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ================= MODALS & POPUPS ================= -->
+
+  <!-- Modal 1: Date Picker Modal -->
+  <div id="modal-date-picker" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl p-6 max-w-sm w-full custom-shadow space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="font-bold text-base text-slate-900 flex items-center gap-2">
+          <i class="ph-bold ph-calendar text-brand-600"></i> Select SAT Date
+        </h3>
+        <button onclick="closeDateModal()" class="text-slate-400 hover:text-slate-600 p-1">
+          <i class="ph-bold ph-x text-lg"></i>
+        </button>
+      </div>
+      <p class="text-xs text-slate-500">Choose your official test session. The dashboard countdown will synchronize automatically.</p>
+      
+      <div>
+        <label class="block text-xs font-bold text-slate-700 mb-1">Official Test Date</label>
+        <input type="date" id="date-picker-input" class="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-brand-500/20 focus:outline-none font-medium">
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 pt-2">
+        <button onclick="selectPresetDate('2026-10-03')" class="px-3 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-xl text-[11px] font-semibold text-center">
+          Oct 3, 2026
+        </button>
+        <button onclick="selectPresetDate('2026-11-07')" class="px-3 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-xl text-[11px] font-semibold text-center">
+          Nov 7, 2026
+        </button>
+        <button onclick="selectPresetDate('2026-12-05')" class="px-3 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-xl text-[11px] font-semibold text-center">
+          Dec 5, 2026
+        </button>
+        <button onclick="selectPresetDate('2027-03-13')" class="px-3 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-xl text-[11px] font-semibold text-center">
+          Mar 13, 2027
+        </button>
+      </div>
+
+      <div class="flex gap-2 pt-2">
+        <button onclick="saveExamDate()" class="flex-1 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold transition">
+          Update Date
+        </button>
+        <button onclick="closeDateModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition">
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: Premium Upgrade Modal -->
+  <div id="modal-premium" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full custom-shadow space-y-6">
+      <div class="flex items-center justify-between">
+        <span class="px-3 py-1 bg-amber-50 text-amber-600 rounded-full text-xs font-bold flex items-center gap-1.5">
+          <i class="ph-fill ph-crown"></i> SATWISE PRO
+        </span>
+        <button onclick="closePremiumModal()" class="text-slate-400 hover:text-slate-600 p-1">
+          <i class="ph-bold ph-x text-lg"></i>
+        </button>
+      </div>
+
+      <div class="text-center space-y-2">
+        <h3 class="text-2xl font-black text-slate-900 tracking-tight">Unlock Higher SAT Score</h3>
+        <p class="text-xs text-slate-500">Get complete unlimited access to official-format digital question banks, adaptive test engine, and personal mentor reviews.</p>
+      </div>
+
+      <div class="space-y-3">
+        <div class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100 text-xs">
+          <i class="ph-fill ph-check-circle text-emerald-500 text-lg shrink-0"></i>
+          <span class="text-slate-700 font-medium">15,000+ realistic practice questions with detailed video solutions</span>
+        </div>
+        <div class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100 text-xs">
+          <i class="ph-fill ph-check-circle text-emerald-500 text-lg shrink-0"></i>
+          <span class="text-slate-700 font-medium">10 Full-Length Adaptive Computerized Practice Tests</span>
+        </div>
+        <div class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100 text-xs">
+          <i class="ph-fill ph-check-circle text-emerald-500 text-lg shrink-0"></i>
+          <span class="text-slate-700 font-medium">1-on-1 monthly strategy check-in with a 1550+ SAT tutor</span>
+        </div>
+      </div>
+
+      <div class="p-4 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 text-center">
+        <div class="text-2xl font-black text-slate-900">$29 <span class="text-xs font-normal text-slate-500">/ month (simulated)</span></div>
+        <p class="text-[11px] text-brand-600 font-medium mt-1">100% money back guarantee if your score does not increase</p>
+      </div>
+
+      <div class="space-y-2">
+        <button onclick="simulateUpgrade()" class="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl text-xs font-bold shadow-md transition">
+          Simulate Instant Upgrade
+        </button>
+        <p class="text-[10px] text-slate-400 text-center">Simulation demo only. No real payment or charge is processed.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 3: Tutor Booking Modal -->
+  <div id="modal-booking" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl p-6 max-w-sm w-full custom-shadow space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="font-bold text-base text-slate-900">Book Session</h3>
+        <button onclick="closeBookingModal()" class="text-slate-400 hover:text-slate-600 p-1">
+          <i class="ph-bold ph-x text-lg"></i>
+        </button>
+      </div>
+
+      <div class="p-3 rounded-2xl bg-slate-50 border border-slate-100">
+        <p class="text-xs font-bold text-slate-800" id="booking-teacher-name">Sarah Johnson</p>
+        <p class="text-[11px] text-brand-600" id="booking-subject">Reading & Writing</p>
+        <p class="text-xs font-extrabold text-slate-900 mt-1" id="booking-rate">$60/hr</p>
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-700 mb-1">Select Day</label>
+        <select id="booking-day" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-brand-500/20 focus:outline-none">
+          <option>Wednesday, Next Week</option>
+          <option>Friday, Next Week</option>
+          <option>Saturday, Next Week</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-700 mb-1">Preferred Time Slot</label>
+        <select id="booking-time" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-brand-500/20 focus:outline-none">
+          <option>10:00 AM - 11:00 AM EST</option>
+          <option>02:00 PM - 03:00 PM EST</option>
+          <option>06:00 PM - 07:00 PM EST</option>
+        </select>
+      </div>
+
+      <div class="pt-2">
+        <button onclick="confirmBooking()" class="w-full py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold transition">
+          Confirm Simulated Booking
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 4: Login / Switch User Modal -->
+  <div id="modal-login" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl p-6 max-w-sm w-full custom-shadow space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="font-bold text-base text-slate-900">Student Sign In</h3>
+        <button onclick="closeLoginModal()" class="text-slate-400 hover:text-slate-600 p-1">
+          <i class="ph-bold ph-x text-lg"></i>
+        </button>
+      </div>
+      <p class="text-xs text-slate-500">Sign in with any sample username to access your dashboard.</p>
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Username or Email</label>
+          <input type="text" id="login-input-user" value="alex.johnson" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-brand-500/20 focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Password</label>
+          <input type="password" id="login-input-pwd" value="••••••••" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-brand-500/20 focus:outline-none">
+        </div>
+      </div>
+
+      <div class="pt-2">
+        <button onclick="performLogin()" class="w-full py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold transition">
+          Sign In
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 5: Add Study Planner Activity Modal -->
+  <div id="modal-add-activity" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl p-6 max-w-sm w-full custom-shadow space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="font-bold text-base text-slate-900 flex items-center gap-2">
+          <i class="ph-bold ph-calendar-plus text-brand-600"></i> Add Study Activity
+        </h3>
+        <button onclick="closeAddActivityModal()" class="text-slate-400 hover:text-slate-600 p-1">
+          <i class="ph-bold ph-x text-lg"></i>
+        </button>
+      </div>
+      <p class="text-xs text-slate-500">Create a personalized study task. You can check it off once completed!</p>
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Activity Title</label>
+          <input type="text" id="activity-title-input" placeholder="e.g. Quadratic Formula & Graphs" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-brand-500/20 focus:outline-none">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Day of Week</label>
+            <select id="activity-day-input" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-brand-500/20 focus:outline-none">
+              <option value="Mon">Monday</option>
+              <option value="Tue">Tuesday</option>
+              <option value="Wed">Wednesday</option>
+              <option value="Thu">Thursday</option>
+              <option value="Fri">Friday</option>
+              <option value="Sat">Saturday</option>
+              <option value="Sun">Sunday</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Duration (mins)</label>
+            <input type="number" id="activity-duration-input" value="30" min="5" max="180" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-brand-500/20 focus:outline-none">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Category / Domain</label>
+          <select id="activity-cat-input" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-brand-500/20 focus:outline-none">
+            <option value="math">Math</option>
+            <option value="rw">Reading & Writing</option>
+            <option value="mock">Full Mock Exam</option>
+            <option value="review">Review & Mistakes</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="flex gap-2 pt-2">
+        <button onclick="saveStudyActivity()" class="flex-1 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold transition">
+          Add to Plan
+        </button>
+        <button onclick="closeAddActivityModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition">
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 6: Welcome / First-Time Onboarding Modal -->
+  <div id="modal-onboarding" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[100] flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full custom-shadow space-y-5 animate-fade-in">
+      <div class="text-center space-y-2">
+        <div class="w-12 h-12 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center mx-auto text-2xl shadow-sm">
+          <i class="ph-bold ph-graduation-cap"></i>
+        </div>
+        <h2 class="text-2xl font-black text-slate-900 tracking-tight">Welcome to SATWISE!</h2>
+        <p class="text-xs text-slate-500">Personalize your test dashboard before you begin.</p>
+      </div>
+
+      <div class="space-y-4">
+        <!-- Optional Avatar Upload -->
+        <div class="flex flex-col items-center gap-2">
+          <div class="relative">
+            <div id="onboarding-avatar-preview" class="w-20 h-20 rounded-2xl overflow-hidden bg-brand-100 text-brand-700 border-2 border-dashed border-brand-300 flex items-center justify-center font-bold text-2xl">
+              <span id="onboarding-avatar-initial">?</span>
+            </div>
+            <label for="onboarding-avatar-file" class="absolute -bottom-1 -right-1 w-7 h-7 bg-brand-600 hover:bg-brand-700 text-white rounded-full flex items-center justify-center cursor-pointer shadow-md transition" title="Upload avatar">
+              <i class="ph-bold ph-upload-simple text-xs"></i>
+              <input type="file" id="onboarding-avatar-file" accept="image/*" class="hidden" onchange="handleOnboardingAvatar(event)">
+            </label>
+          </div>
+          <span class="text-[11px] text-slate-400">Choose custom avatar (optional)</span>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Your Name <span class="text-brand-600">*</span></label>
+          <input type="text" id="onboarding-input-name" placeholder="e.g. Alex Johnson" class="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-brand-500/20 focus:outline-none font-medium">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Dream University / Target College <span class="text-slate-400 font-normal">(Optional)</span></label>
+          <input type="text" id="onboarding-input-school" placeholder="e.g. Stanford, MIT, Harvard, or New Uzbekistan Univ." class="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-brand-500/20 focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Target SAT Score <span class="text-slate-400 font-normal">(Optional, 400 - 1600)</span></label>
+          <input type="number" id="onboarding-input-target" placeholder="1500" value="1500" min="400" max="1600" class="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-brand-500/20 focus:outline-none">
+        </div>
+      </div>
+
+      <div class="pt-2">
+        <button onclick="finishOnboarding()" class="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold shadow-md transition flex items-center justify-center gap-2">
+          <span>Get Started</span>
+          <i class="ph-bold ph-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= JAVASCRIPT APPLICATION LOGIC ================= -->
+  <script>
+    // State Store
+    const state = {
+      lang: 'en',
+      user: {
+        name: 'Alex Johnson',
+        targetScore: 1500,
+        email: 'alex.johnson@example.com',
+        dreamSchool: 'Stanford University',
+        avatarUrl: null, // Default avatar is active initially
+        isPremium: false,
+        streak: 0
+      },
+      plannerTasks: [
+        { id: 1, day: 'Mon', title: 'Linear Equations & Systems', duration: 25, cat: 'math', done: false },
+        { id: 2, day: 'Tue', title: 'Standard English Conventions', duration: 20, cat: 'rw', done: false },
+        { id: 3, day: 'Wed', title: 'Desmos Function Graphing', duration: 30, cat: 'math', done: false },
+        { id: 4, day: 'Thu', title: 'Rhetorical Transitions', duration: 20, cat: 'rw', done: false },
+        { id: 5, day: 'Fri', title: 'Ratios & Data Analysis', duration: 25, cat: 'math', done: false },
+        { id: 6, day: 'Sat', title: 'Mock Test Section Review', duration: 45, cat: 'mock', done: false },
+        { id: 7, day: 'Sun', title: 'Mistakes Deep Dive', duration: 20, cat: 'review', done: false }
+      ],
+      examDate: '2026-09-26',
+      scores: {
+        latest: 0,
+        math: 0,
+        rw: 0,
+        accuracy: 0,
+        questionsSolved: 0,
+        studyHours: 0
+      }
+    };
+
+    // Chart instances
+    let overviewChart = null;
+    let detailedChart = null;
+
+    // Default Avatar Renderer
+    function updateAvatarUI() {
+      const initial = (state.user.name || 'A').trim().charAt(0).toUpperCase();
+
+      // Header avatar
+      const headerContainer = document.getElementById('header-avatar-container');
+      if (headerContainer) {
+        if (state.user.avatarUrl) {
+          headerContainer.innerHTML = `<img src="${state.user.avatarUrl}" class="w-full h-full object-cover">`;
+        } else {
+          headerContainer.innerHTML = `<span id="header-avatar-initial">${initial}</span>`;
+        }
+      }
+
+      // Profile page avatar
+      const profileContainer = document.getElementById('profile-avatar-container');
+      if (profileContainer) {
+        if (state.user.avatarUrl) {
+          profileContainer.innerHTML = `<img src="${state.user.avatarUrl}" class="w-full h-full object-cover">`;
+        } else {
+          profileContainer.innerHTML = `<span id="profile-avatar-initial">${initial}</span>`;
+        }
+      }
+    }
+
+    function handleAvatarUpload(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          state.user.avatarUrl = e.target.result;
+          updateAvatarUI();
+          showToast(state.lang === 'uz' ? 'Profil rasmi yangilandi!' : 'Profile photo updated!', 'success');
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    // Onboarding handling
+    function checkFirstTimeUser() {
+      const onboarded = localStorage.getItem('satwise_onboarded');
+      if (!onboarded) {
+        const modal = document.getElementById('modal-onboarding');
+        if (modal) modal.classList.remove('hidden');
+      } else {
+        const savedName = localStorage.getItem('satwise_user_name');
+        const savedSchool = localStorage.getItem('satwise_user_school');
+        const savedTarget = localStorage.getItem('satwise_user_target');
+        const savedAvatar = localStorage.getItem('satwise_user_avatar');
+
+        if (savedName) state.user.name = savedName;
+        if (savedSchool) state.user.dreamSchool = savedSchool;
+        if (savedTarget) state.user.targetScore = savedTarget;
+        if (savedAvatar) state.user.avatarUrl = savedAvatar;
+        syncUserDisplay();
+      }
+    }
+
+    function handleOnboardingAvatar(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          state.user.avatarUrl = e.target.result;
+          const preview = document.getElementById('onboarding-avatar-preview');
+          if (preview) {
+            preview.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover">`;
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function finishOnboarding() {
+      const nameInput = document.getElementById('onboarding-input-name').value.trim();
+      const schoolInput = document.getElementById('onboarding-input-school').value.trim();
+      const targetInput = document.getElementById('onboarding-input-target').value.trim();
+
+      if (nameInput) {
+        state.user.name = nameInput;
+      }
+      if (schoolInput) {
+        state.user.dreamSchool = schoolInput;
+      }
+      if (targetInput) {
+        state.user.targetScore = targetInput;
+      }
+
+      localStorage.setItem('satwise_onboarded', 'true');
+      localStorage.setItem('satwise_user_name', state.user.name);
+      localStorage.setItem('satwise_user_school', state.user.dreamSchool);
+      localStorage.setItem('satwise_user_target', state.user.targetScore);
+      if (state.user.avatarUrl) {
+        localStorage.setItem('satwise_user_avatar', state.user.avatarUrl);
+      }
+
+      syncUserDisplay();
+      document.getElementById('modal-onboarding').classList.add('hidden');
+      showToast(state.lang === 'uz' ? `Xush kelibsiz, ${state.user.name}!` : `Welcome, ${state.user.name}!`, 'success');
+    }
+
+    function syncUserDisplay() {
+      const initial = (state.user.name || 'A').trim().charAt(0).toUpperCase();
+      document.getElementById('header-user-name').innerText = state.user.name;
+      document.getElementById('dropdown-user-name').innerText = state.user.name;
+      document.getElementById('profile-display-name').innerText = state.user.name;
+      document.getElementById('welcome-name').innerText = state.user.name.split(' ')[0];
+      document.getElementById('profile-input-name').value = state.user.name;
+      document.getElementById('profile-input-target').value = state.user.targetScore;
+      document.getElementById('profile-input-school').value = state.user.dreamSchool || '';
+      updateAvatarUI();
+    }
+
+    // Study Planner Interactive Tasks
+    function renderPlannerTasks() {
+      const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      days.forEach(day => {
+        const container = document.getElementById(`planner-tasks-${day}`);
+        if (!container) return;
+
+        const tasksForDay = state.plannerTasks.filter(t => t.day === day);
+        if (tasksForDay.length === 0) {
+          container.innerHTML = `<p class="text-[11px] text-slate-300 italic py-2 text-center">No tasks</p>`;
+          return;
+        }
+
+        container.innerHTML = tasksForDay.map(task => {
+          let badgeColor = 'bg-blue-50 text-blue-700 border-blue-100';
+          if (task.cat === 'rw') badgeColor = 'bg-purple-50 text-purple-700 border-purple-100';
+          if (task.cat === 'mock') badgeColor = 'bg-amber-50 text-amber-700 border-amber-100';
+          if (task.cat === 'review') badgeColor = 'bg-emerald-50 text-emerald-700 border-emerald-100';
+
+          const strikeClass = task.done ? 'line-through text-slate-400 opacity-60' : 'text-slate-800';
+          const cardBg = task.done ? 'bg-slate-50 border-slate-200' : 'bg-white border-slate-200 hover:border-brand-300';
+
+          return `
+            <div class="p-2.5 rounded-xl border ${cardBg} transition flex items-start gap-2 group relative">
+              <input type="checkbox" ${task.done ? 'checked' : ''} onchange="toggleTaskDone(${task.id})" class="mt-0.5 rounded text-brand-600 focus:ring-brand-500 cursor-pointer">
+              <div class="flex-1 min-w-0">
+                <p class="text-xs font-medium leading-snug break-words ${strikeClass}">${task.title}</p>
+                <div class="flex items-center gap-1.5 mt-1 text-[10px] text-slate-400">
+                  <span class="px-1.5 py-0.5 rounded font-bold uppercase tracking-wider border ${badgeColor}">${task.cat}</span>
+                  <span>${task.duration}m</span>
+                </div>
+              </div>
+              <button onclick="deleteTask(${task.id})" class="opacity-0 group-hover:opacity-100 text-slate-300 hover:text-rose-500 transition text-xs p-1" title="Delete">
+                <i class="ph-bold ph-trash"></i>
+              </button>
+            </div>
+          `;
+        }).join('');
+      });
+    }
+
+    function toggleTaskDone(id) {
+      const task = state.plannerTasks.find(t => t.id === id);
+      if (task) {
+        task.done = !task.done;
+        renderPlannerTasks();
+        if (task.done) {
+          showToast(state.lang === 'uz' ? 'Vazifa bajarildi! ✅' : 'Task marked as completed! ✅', 'success');
+        }
+      }
+    }
+
+    function deleteTask(id) {
+      state.plannerTasks = state.plannerTasks.filter(t => t.id !== id);
+      renderPlannerTasks();
+      showToast(state.lang === 'uz' ? "Vazifa o'chirildi" : "Task removed from planner", "info");
+    }
+
+    function openAddActivityModal(defaultDay = 'Mon') {
+      const daySelect = document.getElementById('activity-day-input');
+      if (daySelect && defaultDay) daySelect.value = defaultDay;
+      document.getElementById('modal-add-activity').classList.remove('hidden');
+    }
+
+    function closeAddActivityModal() {
+      document.getElementById('modal-add-activity').classList.add('hidden');
+      document.getElementById('activity-title-input').value = '';
+    }
+
+    function saveStudyActivity() {
+      const title = document.getElementById('activity-title-input').value.trim();
+      const day = document.getElementById('activity-day-input').value;
+      const duration = parseInt(document.getElementById('activity-duration-input').value, 10) || 30;
+      const cat = document.getElementById('activity-cat-input').value;
+
+      if (!title) {
+        showToast(state.lang === 'uz' ? 'Iltimos, mashg\'ulot nomini kiriting' : 'Please enter an activity title', 'warning');
+        return;
+      }
+
+      const newTask = {
+        id: Date.now(),
+        day,
+        title,
+        duration,
+        cat,
+        done: false
+      };
+
+      state.plannerTasks.push(newTask);
+      renderPlannerTasks();
+      closeAddActivityModal();
+      showToast(state.lang === 'uz' ? 'Rejaga yangi mashg\'ulot qo\'shildi!' : 'Activity added to study plan!', 'success');
+    }
+
+    // Translations Dictionary
+    const translations = {
+      en: {
+        flag: '🇺🇸',
+        label: 'EN',
+        streak: '0 Day Streak',
+        search_placeholder: 'Search topics, questions, domains...',
+        nav_main: 'Main Menu',
+        nav_account: 'Account',
+        nav_overview: 'Overview',
+        nav_practice: 'SAT Practice',
+        nav_progress: 'My Progress',
+        nav_book_course: 'Book a Course',
+        nav_countdown: 'Exam Countdown',
+        nav_planner: 'Study Planner',
+        nav_bookmarks: 'Bookmarks',
+        nav_profile: 'Profile',
+        nav_settings: 'Settings',
+        sidebar_up_title: 'Upgrade to Premium',
+        sidebar_up_desc: 'Unlock 15,000+ realistic practice questions and live tutor sessions.',
+        sidebar_up_btn: 'Upgrade Now',
+        greeting: 'Good morning',
+        subtitle: 'Small steps today. A higher SAT score tomorrow.',
+        start_practicing: 'Start Practicing',
+        no_tests_msg: 'No tests available yet',
+        latest_score: 'Latest Score',
+        target_score: 'Target Score',
+        math: 'Math',
+        rw: 'Reading & Writing',
+        diagnostic_pending: 'Initial diagnostic pending',
+        target: 'Target',
+        remaining: 'Remaining',
+        goal_percentile: 'Goal: Top 1% Percentile',
+        accuracy_math: '0% Accuracy (0/0 solved)',
+        accuracy_rw: '0% Accuracy (0/0 solved)',
+        edit_date: 'Edit Date',
+        official_exam: 'Official Exam',
+        sat_countdown_prefix: 'Your SAT is in',
+        sat_countdown_suffix: 'days',
+        score_progress: 'Your Score Progress',
+        tracking_mocks: 'Tracking official mock diagnostic scores',
+        recommended_title: 'Recommended for You',
+        recommended_sub: 'Curated foundational topics based on 0 starting baseline',
+        view_details: 'View Details',
+        view_all: 'View All'
+      },
+      uz: {
+        flag: '🇺🇿',
+        label: 'UZ',
+        streak: '0 Kunlik Seriya',
+        search_placeholder: 'Mavzular, savollar, bo\'limlarni qidiring...',
+        nav_main: 'Asosiy Menyu',
+        nav_account: 'Hisob',
+        nav_overview: 'Umumiy ko\'rinish',
+        nav_practice: 'SAT Mashg\'ulot',
+        nav_progress: 'Mening natijalarim',
+        nav_book_course: 'Kursga yozilish',
+        nav_countdown: 'Imtihon taymeri',
+        nav_planner: 'O\'quv rejasi',
+        nav_bookmarks: 'Saqlanganlar',
+        nav_profile: 'Profil',
+        nav_settings: 'Sozlamalar',
+        sidebar_up_title: 'Premiumga o\'tish',
+        sidebar_up_desc: '15,000+ haqiqiy savollar va shaxsiy repetitor darslarini oching.',
+        sidebar_up_btn: 'Yangilash',
+        greeting: 'Xayrli tong',
+        subtitle: 'Bugun kichik qadamlar. Ertaga yuqoriroq SAT bali.',
+        start_practicing: 'Mashqni boshlash',
+        no_tests_msg: 'Hozircha testlar mavjud emas',
+        latest_score: 'So\'nggi ball',
+        target_score: 'Maqsadli ball',
+        math: 'Matematika',
+        rw: 'O\'qish va Yozish',
+        diagnostic_pending: 'Dastlabki diagnostika kutilmoqda',
+        target: 'Maqsad',
+        remaining: 'Qoldi',
+        goal_percentile: 'Maqsad: Top 1% Natija',
+        accuracy_math: '0% Aniqlik (0/0 yechilgan)',
+        accuracy_rw: '0% Aniqlik (0/0 yechilgan)',
+        edit_date: 'Sanani o\'zgartirish',
+        official_exam: 'Rasmiy Imtihon',
+        sat_countdown_prefix: 'SAT imtihoningizga',
+        sat_countdown_suffix: 'kun qoldi',
+        score_progress: 'Ballar dinamikasi',
+        tracking_mocks: 'Rasmiy diagnostik test ballari grafigi',
+        recommended_title: 'Sizga tavsiya etiladi',
+        recommended_sub: 'Boshlang\'ich 0 ball asosida tayyorlangan mavzular',
+        view_details: 'Batafsil',
+        view_all: 'Barchasi'
+      }
+    };
+
+    // Navigation function
+    function navigateTo(sectionId) {
+      // Hide all sections
+      const sections = ['overview', 'practice', 'progress', 'book-course', 'countdown', 'planner', 'bookmarks', 'profile', 'settings'];
+      sections.forEach(id => {
+        const el = document.getElementById(`section-${id}`);
+        if (el) el.classList.add('hidden');
+      });
+
+      // Show selected section
+      const target = document.getElementById(`section-${sectionId}`);
+      if (target) {
+        target.classList.remove('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      // Update sidebar nav active classes
+      document.querySelectorAll('.nav-item').forEach(btn => {
+        if (btn.getAttribute('data-nav') === sectionId) {
+          btn.className = 'nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all text-white bg-brand-600 shadow-sm shadow-brand-600/30';
+        } else {
+          btn.className = 'nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all text-slate-400 hover:text-white hover:bg-slate-800/80';
+        }
+      });
+
+      // Render charts if navigating to overview or progress
+      if (sectionId === 'overview') {
+        setTimeout(initOverviewChart, 50);
+      } else if (sectionId === 'progress') {
+        setTimeout(initDetailedChart, 50);
+      }
+
+      // Hide mobile sidebar if open
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('mobile-backdrop');
+      if (sidebar && !sidebar.classList.contains('-translate-x-full') && window.innerWidth < 768) {
+        sidebar.classList.add('-translate-x-full');
+        backdrop.classList.add('hidden');
+      }
+    }
+
+    // Toggle dropdowns
+    function toggleLangDropdown() {
+      const drop = document.getElementById('lang-dropdown');
+      drop.classList.toggle('hidden');
+      document.getElementById('user-dropdown')?.classList.add('hidden');
+      document.getElementById('notifications-flyout')?.classList.add('hidden');
+    }
+
+    function toggleUserDropdown() {
+      const drop = document.getElementById('user-dropdown');
+      drop.classList.toggle('hidden');
+      document.getElementById('lang-dropdown')?.classList.add('hidden');
+      document.getElementById('notifications-flyout')?.classList.add('hidden');
+    }
+
+    function toggleNotifications() {
+      const flyout = document.getElementById('notifications-flyout');
+      flyout.classList.toggle('hidden');
+      document.getElementById('user-dropdown')?.classList.add('hidden');
+      document.getElementById('lang-dropdown')?.classList.add('hidden');
+    }
+
+    function toggleMobileSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('mobile-backdrop');
+      sidebar.classList.toggle('-translate-x-full');
+      backdrop.classList.toggle('hidden');
+    }
+
+    // Language switcher
+    function switchLanguage(lang) {
+      state.lang = lang;
+      const t = translations[lang];
+
+      document.getElementById('lang-flag').innerText = t.flag;
+      document.getElementById('lang-label').innerText = t.label;
+      document.getElementById('lang-dropdown').classList.add('hidden');
+
+      document.getElementById('global-search').placeholder = t.search_placeholder;
+      document.getElementById('txt-streak').innerText = t.streak;
+
+      document.getElementById('txt-nav-main-title').innerText = t.nav_main;
+      document.getElementById('txt-nav-account-title').innerText = t.nav_account;
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (t[key]) el.innerText = t[key];
+      });
+
+      document.getElementById('txt-sidebar-upgrade-title').innerText = t.sidebar_up_title;
+      document.getElementById('txt-sidebar-upgrade-desc').innerText = t.sidebar_up_desc;
+      document.getElementById('txt-sidebar-upgrade-btn').innerText = t.sidebar_up_btn;
+
+      document.getElementById('welcome-greeting').innerText = t.greeting;
+      document.getElementById('welcome-subtitle').innerText = t.subtitle;
+      document.querySelectorAll('.btn-start-txt').forEach(btn => btn.innerText = t.start_practicing);
+
+      document.getElementById('txt-stat-latest').innerText = t.latest_score;
+      document.getElementById('txt-stat-target').innerText = t.target_score;
+      document.getElementById('txt-stat-math').innerText = t.math;
+      document.getElementById('txt-stat-rw').innerText = t.rw;
+      document.getElementById('txt-stat-diagnostic').innerText = t.diagnostic_pending;
+      document.getElementById('txt-target-prefix').innerText = t.target;
+      document.getElementById('txt-remaining-prefix').innerText = t.remaining;
+      document.getElementById('txt-stat-goal').innerText = t.goal_percentile;
+      document.getElementById('txt-math-accuracy').innerText = t.accuracy_math;
+      document.getElementById('txt-rw-accuracy').innerText = t.accuracy_rw;
+      document.getElementById('txt-target-math-prefix').innerText = t.target;
+      document.getElementById('txt-target-rw-prefix').innerText = t.target;
+
+      document.getElementById('txt-sat-countdown-label').innerText = t.sat_countdown_prefix;
+      document.getElementById('txt-countdown-suffix').innerText = t.sat_countdown_suffix;
+      document.getElementById('txt-official-exam').innerText = t.official_exam;
+      document.getElementById('txt-edit-date').innerText = t.edit_date;
+      document.getElementById('txt-score-progress-title').innerText = t.score_progress;
+      document.getElementById('txt-score-progress-desc').innerText = t.tracking_mocks;
+      document.getElementById('txt-rec-title').innerText = t.recommended_title;
+      document.getElementById('txt-rec-sub').innerText = t.recommended_sub;
+      document.getElementById('txt-view-details-1').innerText = t.view_details;
+      document.getElementById('txt-view-details-2').innerText = t.view_details;
+      document.getElementById('txt-view-all').innerText = t.view_all;
+
+      initCountdown();
+      showToast(lang === 'uz' ? "Til O'zbek tiliga o'zgartirildi" : "Language switched to English", "success");
+    }
+
+    // Toast alert system
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      
+      let iconColor = 'text-brand-600 bg-brand-50';
+      let iconName = 'ph-info';
+      if (type === 'warning') {
+        iconColor = 'text-amber-600 bg-amber-50';
+        iconName = 'ph-warning';
+      } else if (type === 'success') {
+        iconColor = 'text-emerald-600 bg-emerald-50';
+        iconName = 'ph-check-circle';
+      }
+
+      toast.className = 'pointer-events-auto bg-white border border-slate-200 shadow-xl rounded-2xl p-3.5 flex items-center gap-3 max-w-sm transition-all duration-300 transform translate-y-2 opacity-0';
+      toast.innerHTML = `
+        <div class="w-8 h-8 rounded-xl ${iconColor} flex items-center justify-center shrink-0">
+          <i class="ph-bold ${iconName} text-base"></i>
+        </div>
+        <p class="text-xs font-semibold text-slate-800 flex-1">${message}</p>
+      `;
+
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      }, 10);
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-x-4');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    // Mandatory rule: All "Start Practicing" / "Start" buttons display: "No tests available yet"
+    function triggerNoTests() {
+      const msg = translations[state.lang].no_tests_msg;
+      showToast(msg, "warning");
+    }
+
+    // Countdown calculation
+    function initCountdown() {
+      const examDateObj = new Date(state.examDate + 'T09:00:00');
+      const today = new Date();
+      const diffTime = examDateObj - today;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      const displayDays = diffDays > 0 ? diffDays : 0;
+
+      const locale = state.lang === 'uz' ? 'uz-UZ' : 'en-US';
+      const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+      const formattedDate = examDateObj.toLocaleDateString(locale, options);
+
+      const cdOverview = document.getElementById('countdown-days-overview');
+      if (cdOverview) cdOverview.innerText = displayDays;
+
+      const cdDateOverview = document.getElementById('countdown-date-overview');
+      if (cdDateOverview) {
+        const prefix = state.lang === 'uz' ? 'Maqsad' : 'Target';
+        cdDateOverview.innerHTML = `<i class="ph-bold ph-clock"></i> ${prefix}: ${formattedDate}`;
+      }
+
+      const overviewBtnDate = document.getElementById('overview-btn-date');
+      if (overviewBtnDate) {
+        const datePrefix = state.lang === 'uz' ? 'SAT Sanasi' : 'SAT Date';
+        overviewBtnDate.innerText = `${datePrefix}: ${examDateObj.toLocaleDateString(locale, { month: 'short', day: 'numeric', year: 'numeric' })}`;
+      }
+
+      const trackerDays = document.getElementById('tracker-days');
+      if (trackerDays) trackerDays.innerText = displayDays;
+
+      const trackerDisplay = document.getElementById('tracker-date-display');
+      if (trackerDisplay) {
+        const prefix = state.lang === 'uz' ? 'Belgilangan imtihon sanasi' : 'Your scheduled test date';
+        trackerDisplay.innerText = `${prefix}: ${formattedDate}`;
+      }
+    }
+
+    function openDateModal() {
+      document.getElementById('modal-date-picker').classList.remove('hidden');
+    }
+
+    function closeDateModal() {
+      document.getElementById('modal-date-picker').classList.add('hidden');
+    }
+
+    function selectPresetDate(dateStr) {
+      const input = document.getElementById('date-picker-input');
+      if (input) input.value = dateStr;
+    }
+
+    function saveExamDate() {
+      const input = document.getElementById('date-picker-input');
+      if (input && input.value) {
+        state.examDate = input.value;
+        initCountdown();
+        closeDateModal();
+        showToast(state.lang === 'uz' ? "Imtihon sanasi yangilandi!" : "Exam target date updated!", "success");
+      }
+    }
+
+    // Practice tabs
+    function switchPracticeTab(tab) {
+      const mathBtn = document.getElementById('tab-btn-math');
+      const rwBtn = document.getElementById('tab-btn-rw');
+      const mathSec = document.getElementById('practice-math-content');
+      const rwSec = document.getElementById('practice-rw-content');
+
+      if (tab === 'math') {
+        mathBtn.className = 'pb-3 text-sm font-bold text-brand-600 border-b-2 border-brand-600 transition flex items-center gap-2';
+        rwBtn.className = 'pb-3 text-sm font-semibold text-slate-400 hover:text-slate-700 transition flex items-center gap-2';
+        mathSec.classList.remove('hidden');
+        rwSec.classList.add('hidden');
+      } else {
+        rwBtn.className = 'pb-3 text-sm font-bold text-purple-600 border-b-2 border-purple-600 transition flex items-center gap-2';
+        mathBtn.className = 'pb-3 text-sm font-semibold text-slate-400 hover:text-slate-700 transition flex items-center gap-2';
+        rwSec.classList.remove('hidden');
+        mathSec.classList.add('hidden');
+      }
+    }
+
+    // Teacher filters & simulated booking
+    function filterTeachers(subject) {
+      document.getElementById('filter-teacher-all').className = subject === 'all' ? 'px-3 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-semibold' : 'px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 text-xs font-semibold';
+      document.getElementById('filter-teacher-math').className = subject === 'Math' ? 'px-3 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-semibold' : 'px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 text-xs font-semibold';
+      document.getElementById('filter-teacher-rw').className = subject === 'Reading' ? 'px-3 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-semibold' : 'px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 text-xs font-semibold';
+
+      document.querySelectorAll('.teacher-card').forEach(card => {
+        if (subject === 'all' || card.getAttribute('data-subject') === subject) {
+          card.classList.remove('hidden');
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+    }
+
+    function openBookingModal(name, rate, subject) {
+      document.getElementById('booking-teacher-name').innerText = name;
+      document.getElementById('booking-rate').innerText = rate;
+      document.getElementById('booking-subject').innerText = subject;
+      document.getElementById('modal-booking').classList.remove('hidden');
+    }
+
+    function closeBookingModal() {
+      document.getElementById('modal-booking').classList.add('hidden');
+    }
+
+    function confirmBooking() {
+      closeBookingModal();
+      const teacher = document.getElementById('booking-teacher-name').innerText;
+      showToast(state.lang === 'uz' ? `${teacher} bilan dars band qilindi (Simulyatsiya)!` : `Lesson booked with ${teacher} (Simulated)!`, "success");
+    }
+
+    // Premium upgrade modal
+    function openPremiumModal() {
+      document.getElementById('modal-premium').classList.remove('hidden');
+    }
+
+    function closePremiumModal() {
+      document.getElementById('modal-premium').classList.add('hidden');
+    }
+
+    function simulateUpgrade() {
+      state.user.isPremium = true;
+      closePremiumModal();
+      const badge = document.getElementById('profile-status-badge');
+      if (badge) {
+        badge.className = "mt-2 inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800";
+        badge.innerText = "Premium PRO Member";
+      }
+      showToast(state.lang === 'uz' ? "Tabriklaymiz! Siz Premium a'zosi bo'ldingiz (Simulyatsiya)" : "Simulated Upgrade Complete! Premium unlocked.", "success");
+    }
+
+    // Profile & Login simulation
+    function saveProfile() {
+      const name = document.getElementById('profile-input-name').value;
+      const target = document.getElementById('profile-input-target').value;
+      
+      state.user.name = name;
+      state.user.targetScore = target;
+
+      document.getElementById('header-user-name').innerText = name;
+      document.getElementById('dropdown-user-name').innerText = name;
+      document.getElementById('profile-display-name').innerText = name;
+      document.getElementById('welcome-name').innerText = name.split(' ')[0];
+
+      showToast(state.lang === 'uz' ? "Profil ma'lumotlari muvaffaqiyatli saqlandi!" : "Profile updated successfully!", "success");
+    }
+
+    function openLoginModal() {
+      document.getElementById('modal-login').classList.remove('hidden');
+      document.getElementById('user-dropdown')?.classList.add('hidden');
+    }
+
+    function closeLoginModal() {
+      document.getElementById('modal-login').classList.add('hidden');
+    }
+
+    function performLogin() {
+      const username = document.getElementById('login-input-user').value || 'Alex Johnson';
+      state.user.name = username.includes('@') ? username.split('@')[0] : username;
+      state.user.email = username.includes('@') ? username : `${username}@example.com`;
+
+      document.getElementById('header-user-name').innerText = state.user.name;
+      document.getElementById('dropdown-user-name').innerText = state.user.name;
+      document.getElementById('dropdown-user-email').innerText = state.user.email;
+      document.getElementById('profile-display-name').innerText = state.user.name;
+      document.getElementById('profile-display-email').innerText = state.user.email;
+      document.getElementById('welcome-name').innerText = state.user.name.split(' ')[0];
+
+      closeLoginModal();
+      showToast(state.lang === 'uz' ? `Xush kelibsiz, ${state.user.name}!` : `Signed in as ${state.user.name}!`, "success");
+    }
+
+    // Search bar functionality
+    const searchableItems = [
+      { title: 'Algebra & Equations', section: 'practice', desc: 'Linear equations, systems, inequalities' },
+      { title: 'Advanced Math', section: 'practice', desc: 'Quadratics, non-linear functions, polynomials' },
+      { title: 'Problem Solving & Data Analysis', section: 'practice', desc: 'Ratios, percentages, statistics, probability' },
+      { title: 'Geometry & Trigonometry', section: 'practice', desc: 'Area, volume, angles, right triangles' },
+      { title: 'Reading: Information and Ideas', section: 'practice', desc: 'Central ideas, inferences, textual evidence' },
+      { title: 'Writing: Craft and Structure', section: 'practice', desc: 'Words in context, rhetorical structure' },
+      { title: 'Expression of Ideas', section: 'practice', desc: 'Transitions, rhetorical synthesis' },
+      { title: 'Standard English Conventions', section: 'practice', desc: 'Boundaries, agreement, mechanics' },
+      { title: 'My Progress & Analytics', section: 'progress', desc: 'Score history, accuracy, and test records' },
+      { title: 'Book a Course & Tutors', section: 'book-course', desc: 'Find expert tutors and schedule live prep' },
+      { title: 'Exam Countdown', section: 'countdown', desc: 'Official test dates, milestones, and goals' },
+      { title: 'Study Planner', section: 'planner', desc: 'Personalized schedule and prep timelines' },
+      { title: 'Bookmarks & Saved Questions', section: 'bookmarks', desc: 'Review saved items' },
+      { title: 'Account Settings', section: 'settings', desc: 'Preferences, study reminders, theme' }
+    ];
+
+    function setupSearchIndex() {
+      const searchInput = document.getElementById('global-search');
+      const searchDropdown = document.getElementById('search-dropdown');
+      if (!searchInput || !searchDropdown) return;
+
+      searchInput.addEventListener('input', function(e) {
+        const query = e.target.value.trim().toLowerCase();
+        if (!query) {
+          searchDropdown.classList.add('hidden');
+          searchDropdown.innerHTML = '';
+          return;
+        }
+
+        const matches = searchableItems.filter(item => 
+          item.title.toLowerCase().includes(query) || 
+          item.desc.toLowerCase().includes(query)
+        );
+
+        if (matches.length === 0) {
+          searchDropdown.innerHTML = `
+            <div class="px-4 py-3 text-xs text-slate-400 text-center">
+              ${state.lang === 'uz' ? 'Natija topilmadi' : 'No matching sections found'}
+            </div>
+          `;
+        } else {
+          searchDropdown.innerHTML = matches.map(item => `
+            <button onclick="handleSearchResult('${item.section}')" class="w-full text-left px-3 py-2 rounded-xl hover:bg-slate-50 transition flex flex-col group">
+              <span class="text-xs font-semibold text-slate-800 group-hover:text-brand-600">${item.title}</span>
+              <span class="text-[11px] text-slate-400 leading-tight">${item.desc}</span>
+            </button>
+          `).join('');
+        }
+
+        searchDropdown.classList.remove('hidden');
+      });
+    }
+
+    function handleSearchResult(sectionId) {
+      navigateTo(sectionId);
+      const searchDropdown = document.getElementById('search-dropdown');
+      const searchInput = document.getElementById('global-search');
+      if (searchDropdown) searchDropdown.classList.add('hidden');
+      if (searchInput) searchInput.value = '';
+    }
+
+    // Chart.js initializations (Strict initial 0 score baseline)
+    function initOverviewChart() {
+      const ctx = document.getElementById('overviewScoreChart');
+      if (!ctx) return;
+
+      if (overviewChart) {
+        overviewChart.destroy();
+      }
+
+      overviewChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['Diag 1', 'Diag 2', 'Diag 3', 'Diag 4', 'Diag 5'],
+          datasets: [
+            {
+              label: 'Your Score (Baseline)',
+              data: [0, 0, 0, 0, 0], // Strict 0 initial score
+              borderColor: '#1a5ceb',
+              backgroundColor: 'rgba(26, 92, 235, 0.08)',
+              borderWidth: 2.5,
+              fill: true,
+              tension: 0.3,
+              pointBackgroundColor: '#1a5ceb',
+              pointRadius: 4,
+            },
+            {
+              label: 'Target Score (1500)',
+              data: [1500, 1500, 1500, 1500, 1500],
+              borderColor: '#cbd5e1',
+              borderWidth: 1.5,
+              borderDash: [5, 5],
+              fill: false,
+              pointRadius: 0,
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            y: {
+              min: 0,
+              max: 1600,
+              ticks: { stepSize: 400, color: '#94a3b8', font: { size: 10 } },
+              grid: { color: '#f1f5f9' }
+            },
+            x: {
+              ticks: { color: '#94a3b8', font: { size: 10 } },
+              grid: { display: false }
+            }
+          }
+        }
+      });
+    }
+
+    function initDetailedChart() {
+      const ctx = document.getElementById('detailedProgressChart');
+      if (!ctx) return;
+
+      if (detailedChart) {
+        detailedChart.destroy();
+      }
+
+      detailedChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Algebra', 'Adv. Math', 'Data Analysis', 'Geometry', 'Reading Craft', 'Info & Ideas', 'Conventions', 'Expression'],
+          datasets: [{
+            label: 'Accuracy % (Initial)',
+            data: [0, 0, 0, 0, 0, 0, 0, 0], // Strict 0 accuracy baseline
+            backgroundColor: '#3b82f6',
+            borderRadius: 6,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            y: {
+              min: 0,
+              max: 100,
+              ticks: { callback: v => v + '%', color: '#94a3b8', font: { size: 10 } },
+              grid: { color: '#f1f5f9' }
+            },
+            x: {
+              ticks: { color: '#64748b', font: { size: 10 } },
+              grid: { display: false }
+            }
+          }
+        }
+      });
+    }
+
+    // Global outside click handler for dropdowns
+    window.addEventListener('click', function(e) {
+      if (!e.target.closest('#notifications-flyout') && !e.target.closest('button[onclick="toggleNotifications()"]')) {
+        document.getElementById('notifications-flyout')?.classList.add('hidden');
+      }
+      if (!e.target.closest('#user-dropdown') && !e.target.closest('button[onclick="toggleUserDropdown()"]')) {
+        document.getElementById('user-dropdown')?.classList.add('hidden');
+      }
+      if (!e.target.closest('#lang-dropdown') && !e.target.closest('#lang-btn')) {
+        document.getElementById('lang-dropdown')?.classList.add('hidden');
+      }
+      if (!e.target.closest('#search-dropdown') && !e.target.closest('#global-search')) {
+        document.getElementById('search-dropdown')?.classList.add('hidden');
+      }
+    });
+
+    // Window load bootstrap
+    window.onload = function() {
+      try {
+        checkFirstTimeUser();
+        initCountdown();
+        setupSearchIndex();
+        initOverviewChart();
+        renderPlannerTasks();
+        updateAvatarUI();
+        const dateInput = document.getElementById('date-picker-input');
+        if (dateInput) {
+          dateInput.value = state.examDate;
+        }
+      } catch (err) {
+        console.warn("Initialization notice:", err);
+      }
+    };
+  </script>
+</body>
+</html>
